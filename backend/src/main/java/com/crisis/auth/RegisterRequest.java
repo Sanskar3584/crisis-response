@@ -1,11 +1,15 @@
 package com.crisis.auth;
 
 import com.crisis.user.Role;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public record RegisterRequest(
-        String email,
-        String password,
-        String displayName,
-        Role role,
-        String venueId
+        @Email @NotBlank String email,
+        @NotBlank @Size(min = 6, message = "Password must be at least 6 characters") String password,
+        @NotBlank String displayName,
+        @NotNull Role role,
+        @NotBlank String venueId
 ) {}

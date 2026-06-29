@@ -1,5 +1,6 @@
 package com.crisis.incident;
 
+import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,7 @@ public class IncidentController {
 
     @PostMapping
     public Incident report(@AuthenticationPrincipal String userId,
-                           @RequestBody CreateIncidentRequest request) {
+                           @Valid @RequestBody CreateIncidentRequest request) {
         return incidentService.report(userId, request);
     }
 
@@ -28,7 +29,7 @@ public class IncidentController {
     @PatchMapping("/{id}/status")
     public Incident updateStatus(@AuthenticationPrincipal String userId,
                                  @PathVariable String id,
-                                 @RequestBody UpdateStatusRequest request) {
+                                 @Valid @RequestBody UpdateStatusRequest request) {
         return incidentService.updateStatus(userId, id, request.status());
     }
     @GetMapping("/{id}/events")

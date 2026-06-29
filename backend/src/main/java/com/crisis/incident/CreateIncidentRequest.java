@@ -1,7 +1,10 @@
 package com.crisis.incident;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public record CreateIncidentRequest(
-        IncidentType type,
-        Severity severity,
-        String description
+        @NotNull IncidentType type,
+        @NotNull Severity severity,
+        @NotBlank String description
 ) {}

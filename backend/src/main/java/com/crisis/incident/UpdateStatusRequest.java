@@ -1,3 +1,7 @@
 package com.crisis.incident;
 
-public record UpdateStatusRequest(IncidentStatus status) {}
+import jakarta.validation.constraints.NotNull;
+
+public record UpdateStatusRequest(
+        @NotNull IncidentStatus status
+) {}

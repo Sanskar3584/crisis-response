@@ -3,6 +3,9 @@ package com.crisis.user;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.data.mongodb.core.index.Indexed;
+
+
 
 @Document(collection = "users")
 public class User {
@@ -11,6 +14,7 @@ public class User {
     @Id
     private String id;
 
+    @Indexed(unique = true)
     private String email;
     private String displayName;
     private Role role;

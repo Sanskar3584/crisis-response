@@ -85,3 +85,14 @@ Authorization: Bearer {{token}}
 {
   "status": "RESOLVED"
 }
+### Register with invalid data -> expect 400 with field errors
+POST http://localhost:8080/auth/register
+Content-Type: application/json
+
+{
+  "email": "not-an-email",
+  "password": "123",
+  "displayName": "",
+  "role": "STAFF",
+  "venueId": "venue-1"
+}
