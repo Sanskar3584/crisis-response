@@ -1,0 +1,87 @@
+### 1. Login as Bob (saves token)
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "bob@hotel.com",
+  "password": "secret123"
+}
+
+> {% client.global.set("token", response.body.token); %}
+
+### 2. Report an incident (saves incidentId)
+POST http://localhost:8080/incidents
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "type": "FIRE",
+  "severity": "HIGH",
+  "description": "Smoke reported in kitchen"
+}
+
+> {% client.global.set("incidentId", response.body.id); %}
+
+### 3. Update status -> ACKNOWLEDGED  (expect version: 1)
+PATCH http://localhost:8080/incidents/{{incidentId}}/status
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "ACKNOWLEDGED"
+}
+
+### 4. Update status -> IN_PROGRESS  (expect version: 2)
+PATCH http://localhost:8080/incidents/{{incidentId}}/status
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "IN_PROGRESS"
+}
+
+### 5. Get the event log  (expect CREATED + 2x STATUS_CHANGED)
+GET http://localhost:8080/incidents/{{incidentId}}/events
+Authorization: Bearer {{token}}
+
+### 6. List incidents (Bob's venue)
+GET http://localhost:8080/incidents
+Authorization: Bearer {{token}}
+
+### --- Tenancy checks (Carol, venue-2) ---
+
+### 7. Register Carol (skip / 409 if she already exists)
+POST http://localhost:8080/auth/register
+Content-Type: application/json
+
+{
+  "email": "carol@hotel2.com",
+  "password": "pass123",
+  "displayName": "Carol",
+  "role": "STAFF",
+  "venueId": "venue-2"
+}
+
+### 8. Login as Carol (overwrites token with Carol's)
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "carol@hotel2.com",
+  "password": "pass123"
+}
+
+> {% client.global.set("token", response.body.token); %}
+
+### 9. Carol lists incidents -> expect []  (can't see venue-1)
+GET http://localhost:8080/incidents
+Authorization: Bearer {{token}}
+
+### 10. Carol tries to update Bob's incident -> expect 403
+PATCH http://localhost:8080/incidents/{{incidentId}}/status
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "RESOLVED"
+}

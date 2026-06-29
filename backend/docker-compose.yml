@@ -1,0 +1,13 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: crisis-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
