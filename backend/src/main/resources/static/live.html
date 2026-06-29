@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Live Incident Board - venue-1</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+</head>
+<body style="font-family: sans-serif">
+<h1>Live Incident Board - venue-1</h1>
+<p id="status">Connecting...</p>
+<ul id="list"></ul>
+
+<script>
+    const client = new StompJs.Client({
+        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+        onConnect: () => {
+            document.getElementById('status').textContent = 'Connected - waiting for incidents';
+            client.subscribe('/topic/venue/venue-1', (msg) => {
+                const i = JSON.parse(msg.body);
+                const li = document.createElement('li');
+                li.textContent = `[${i.severity}] ${i.type} - ${i.status} - ${i.description}`;
+                document.getElementById('list').prepend(li);
+            });
+        }
+    });
+    client.activate();
+</script>
+</body>
+</html>
