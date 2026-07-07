@@ -68,7 +68,7 @@ export default function ReportIncident({ onCreated }: ReportIncidentProps) {
             <div>
                 <label htmlFor="description">Description</label><br />
                 <input id="description" type="text" value={description}
-                       onChange={(e) => setDescription(e.target.value)} required />
+                       onChange={(e) => setDescription(e.target.value)} />
             </div>
 
             <button type="submit">Report</button>

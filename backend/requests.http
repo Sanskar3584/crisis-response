@@ -96,3 +96,25 @@ Content-Type: application/json
   "role": "STAFF",
   "venueId": "venue-1"
 }
+### Register Alice (MANAGER) - 409 if she already exists
+POST http://localhost:8080/auth/register
+Content-Type: application/json
+
+{
+  "email": "alice@hotel.com",
+  "password": "pass123",
+  "displayName": "Alice Manager",
+  "role": "MANAGER",
+  "venueId": "venue-1"
+}
+
+### Login as Alice (saves token)
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@hotel.com",
+  "password": "pass123"
+}
+
+> {% client.global.set("token", response.body.token); %}

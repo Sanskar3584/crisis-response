@@ -1,5 +1,6 @@
 package com.crisis.incident;
 
+import com.crisis.user.Role;
 import com.crisis.user.User;
 import com.crisis.user.UserRepository;
 import org.springframework.http.HttpStatus;

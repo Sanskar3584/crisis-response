@@ -6,5 +6,5 @@ import jakarta.validation.constraints.NotNull;
 public record CreateIncidentRequest(
         @NotNull IncidentType type,
         @NotNull Severity severity,
-        @NotBlank String description
+        String description
 ) {}
