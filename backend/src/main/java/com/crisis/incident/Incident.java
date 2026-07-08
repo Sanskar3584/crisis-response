@@ -11,6 +11,15 @@ public class Incident {
 
     @Id
     private String id;
+    private boolean archived;
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
+    }
 
     private String venueId;          // which venue/tenant this belongs to
     private IncidentType type;

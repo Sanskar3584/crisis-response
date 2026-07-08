@@ -4,4 +4,5 @@ export type Incident = {
     severity: string;
     status: string;
     description: string;
+    archived?: boolean;
 };

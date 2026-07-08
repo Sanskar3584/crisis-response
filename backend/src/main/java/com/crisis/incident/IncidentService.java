@@ -45,7 +45,25 @@ public class IncidentService {
 
     public List<Incident> listForVenue(String userId) {
         User user = currentUser(userId);
-        return incidentRepository.findByVenueId(user.getVenueId());
+        return incidentRepository.findActiveByVenue(user.getVenueId());
+    }
+    public Incident archive(String userId, String incidentId) {
+        User user = currentUser(userId);
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Incident not found"));
+
+        if (!incident.getVenueId().equals(user.getVenueId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your venue");
+        }
+        if (incident.getStatus() != IncidentStatus.RESOLVED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Only resolved incidents can be removed");
+        }
+
+        incident.setArchived(true);
+        incident.setUpdatedAt(Instant.now());
+        Incident saved = incidentRepository.save(incident);
+        logEvent(saved, "ARCHIVED", userId, "Removed from active board");  // history is kept
+        return saved;
     }
 
     public Incident updateStatus(String userId, String incidentId, IncidentStatus newStatus) {

@@ -80,12 +80,13 @@ export default function Board({ onLogout,theme, onToggleTheme}: BoardProps) {
         seenIds.current.add(incident.id);
         setIncidents((prev) => {
             const others = prev.filter((i) => i.id !== incident.id);
+            if (incident.archived) return others;     // archived elsewhere -> remove from board
             return [incident, ...others];
         });
     }
     async function changeStatus(id: string, status: string) {
         const token = localStorage.getItem("token");
-        await fetch(`http://localhost:8080/incidents/${id}/status`, {
+        const res = await fetch(`http://localhost:8080/incidents/${id}/status`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
@@ -93,8 +94,22 @@ export default function Board({ onLogout,theme, onToggleTheme}: BoardProps) {
             },
             body: JSON.stringify({ status }),
         });
-        // The change stream pushes the updated incident back over the WebSocket,
-        // so the board refreshes on its own. No manual state update needed.
+        if (!res.ok) {
+            alert("That status change isn't allowed.");
+        }
+        // On success the change stream pushes the update back over WebSocket.
+    }
+    async function archiveIncident(id: string) {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`http://localhost:8080/incidents/${id}/archive`, {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+            setIncidents((prev) => prev.filter((x) => x.id !== id));
+        } else {
+            alert("Could not remove the incident.");
+        }
     }
 
     return (
@@ -136,7 +151,13 @@ export default function Board({ onLogout,theme, onToggleTheme}: BoardProps) {
                         ) : (
                             <ul className="incident-list">
                                 {incidents.map((i) => (
-                                    <li key={i.id} className={`incident-card incident-card--${i.severity}`}>
+                                    <li
+                                        key={i.id}
+                                        className={`incident-card incident-card--${i.severity}`}
+                                        style={i.status === "RESOLVED"
+                                            ? { borderLeftColor: "#16a34a", background: "rgba(22,163,74,0.08)" }
+                                            : undefined}
+                                    >
                                         <span className={`badge badge-${i.severity}`}>{i.severity}</span>
                                         <span className="incident-type">{i.type}</span>
                                         <span className="incident-desc">{i.description}</span>
@@ -145,17 +166,10 @@ export default function Board({ onLogout,theme, onToggleTheme}: BoardProps) {
                                             onChange={(e) => changeStatus(i.id, e.target.value)}
                                             aria-label={`Change status for ${i.type} incident`}
                                             style={{
-                                                marginLeft: "auto",
-                                                width: 150,
-                                                minWidth: 150,
-                                                maxWidth: 150,
-                                                fontSize: "0.72rem",
-                                                fontWeight: 600,
-                                                padding: "0.25rem 0.4rem",
-                                                background: "var(--surface)",
-                                                color: "var(--ink)",
-                                                border: "1px solid var(--border)",
-                                                borderRadius: 4,
+                                                marginLeft: "auto", width: 150, minWidth: 150, maxWidth: 150,
+                                                fontSize: "0.72rem", fontWeight: 600, padding: "0.25rem 0.4rem",
+                                                background: "var(--surface)", color: "var(--ink)",
+                                                border: "1px solid var(--border)", borderRadius: 4,
                                             }}
                                         >
                                             <option value="OPEN">OPEN</option>
@@ -163,6 +177,19 @@ export default function Board({ onLogout,theme, onToggleTheme}: BoardProps) {
                                             <option value="IN_PROGRESS">IN_PROGRESS</option>
                                             <option value="RESOLVED">RESOLVED</option>
                                         </select>
+                                        {i.status === "RESOLVED" && (
+                                            <button
+                                                onClick={() => archiveIncident(i.id)}
+                                                style={{
+                                                    marginTop: 0, marginLeft: 8, padding: "0.25rem 0.6rem",
+                                                    fontSize: "0.72rem", fontWeight: 600, whiteSpace: "nowrap",
+                                                    background: "#16a34a", border: "1px solid #16a34a",
+                                                    color: "#fff", borderRadius: 4, cursor: "pointer",
+                                                }}
+                                            >
+                                                Remove
+                                            </button>
+                                        )}
                                     </li>
                                 ))}
                             </ul>

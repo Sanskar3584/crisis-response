@@ -32,6 +32,10 @@ public class IncidentController {
                                  @Valid @RequestBody UpdateStatusRequest request) {
         return incidentService.updateStatus(userId, id, request.status());
     }
+    @PatchMapping("/{id}/archive")
+    public Incident archive(@AuthenticationPrincipal String userId, @PathVariable String id) {
+        return incidentService.archive(userId, id);
+    }
     @GetMapping("/{id}/events")
     public List<IncidentEvent> getEvents(@AuthenticationPrincipal String userId,
                                          @PathVariable String id) {
