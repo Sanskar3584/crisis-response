@@ -33,11 +33,11 @@ public class IncidentChangeStreamListener {
         container = new DefaultMessageListenerContainer(mongoTemplate);
         container.start();
 
-        // For every change, push the full incident to its venue topic.
+        // For every change, push the full incident to the people allowed to see it.
         MessageListener<ChangeStreamDocument<Document>, Incident> listener = message -> {
             Incident incident = message.getBody();
             if (incident != null) {
-                messagingTemplate.convertAndSend("/topic/venue/" + incident.getVenueId(), incident);
+                broadcast(incident);
             }
         };
 
@@ -47,6 +47,17 @@ public class IncidentChangeStreamListener {
                 .build();
 
         container.register(request, Incident.class);
+    }
+
+    /**
+     * Staff boards subscribe to their venue's topic and see every incident there. The reporter
+     * also gets the incident on a private per-user queue, which is all a guest may subscribe to.
+     */
+    void broadcast(Incident incident) {
+        messagingTemplate.convertAndSend("/topic/venue/" + incident.getVenueId(), incident);
+        if (incident.getReportedBy() != null) {
+            messagingTemplate.convertAndSendToUser(incident.getReportedBy(), "/queue/incidents", incident);
+        }
     }
 
     @PreDestroy

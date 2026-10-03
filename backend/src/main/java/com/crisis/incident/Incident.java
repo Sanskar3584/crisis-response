@@ -30,6 +30,7 @@ public class Incident {
 
     private Instant createdAt;
     private Instant updatedAt;
+    private Instant resolvedAt;
 
     @Version
     private Long version;            // optimistic concurrency
@@ -113,4 +114,7 @@ public class Incident {
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public Instant getResolvedAt() { return resolvedAt; }
+    public void setResolvedAt(Instant resolvedAt) { this.resolvedAt = resolvedAt; }
 }

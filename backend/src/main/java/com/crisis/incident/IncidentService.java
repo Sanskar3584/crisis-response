@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
@@ -45,6 +46,9 @@ public class IncidentService {
 
     public List<Incident> listForVenue(String userId) {
         User user = currentUser(userId);
+        if (user.getRole() == Role.GUEST) {
+            return incidentRepository.findActiveByVenueAndReporter(user.getVenueId(), userId);
+        }
         return incidentRepository.findActiveByVenue(user.getVenueId());
     }
     public Incident archive(String userId, String incidentId) {
@@ -54,6 +58,9 @@ public class IncidentService {
 
         if (!incident.getVenueId().equals(user.getVenueId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your venue");
+        }
+        if (user.getRole() != Role.MANAGER && user.getRole() != Role.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only managers can remove incidents");
         }
         if (incident.getStatus() != IncidentStatus.RESOLVED) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Only resolved incidents can be removed");
@@ -77,6 +84,9 @@ public class IncidentService {
         }
 
         IncidentStatus oldStatus = incident.getStatus();
+        if (newStatus == IncidentStatus.RESOLVED && incident.getResolvedAt() == null) {
+            incident.setResolvedAt(Instant.now());
+        }
         incident.setStatus(newStatus);
         incident.setUpdatedAt(Instant.now());
         Incident saved = incidentRepository.save(incident);
@@ -112,5 +122,29 @@ public class IncidentService {
     private User currentUser(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unknown user"));
+    }
+
+    public IncidentStats stats(String userId) {
+        User user = currentUser(userId);
+        String venueId = user.getVenueId();
+
+        List<Incident> resolved = incidentRepository.findResolvedByVenue(venueId);
+        Double avg = null;
+        if (!resolved.isEmpty()) {
+            long totalMinutes = 0;
+            for (Incident inc : resolved) {
+                if (inc.getCreatedAt() != null && inc.getResolvedAt() != null) {
+                    totalMinutes += Duration.between(inc.getCreatedAt(), inc.getResolvedAt()).toMinutes();
+                }
+            }
+            avg = (double) totalMinutes / resolved.size();
+        }
+
+        long open = incidentRepository.findActiveByVenue(venueId).stream()
+                .filter(i -> i.getStatus() != IncidentStatus.RESOLVED)
+                .count();
+        long myReports = incidentRepository.countByReportedBy(userId);
+
+        return new IncidentStats(open, resolved.size(), myReports, avg);
     }
 }

@@ -2,6 +2,7 @@ package com.crisis.auth;
 
 import com.crisis.user.User;
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,5 +23,11 @@ public class AuthController {
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/change-password")
+    public void changePassword(@AuthenticationPrincipal String userId,
+                               @Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(userId, request);
     }
 }

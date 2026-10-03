@@ -27,8 +27,8 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public List<User> getAllUsers(@AuthenticationPrincipal String userId) {
+        return userService.getUsersForVenue(userId);
     }
 
     @GetMapping("/{id}")
@@ -38,5 +38,11 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(user);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
+    public void deleteUser(@AuthenticationPrincipal String adminUserId, @PathVariable String id) {
+        userService.deleteUser(adminUserId, id);
     }
 }

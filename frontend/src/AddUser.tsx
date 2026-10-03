@@ -1,72 +1,68 @@
 import { useState } from "react";
+import { api } from "./api";
 
-export default function AddUser() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [displayName, setDisplayName] = useState("");
-    const [role, setRole] = useState("STAFF");
-    const [message, setMessage] = useState("");
-    const [error, setError] = useState("");
+type Props = { onCreated?: () => void };
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        setMessage("");
-        setError("");
-        const token = localStorage.getItem("token");
+export default function AddUser({ onCreated }: Props) {
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("STAFF");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-        try {
-            const res = await fetch("http://localhost:8080/users", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ email, password, displayName, role }),
-            });
-
-            if (res.status === 409) { setError("That email is already registered."); return; }
-            if (!res.ok) { setError("Could not create the user."); return; }
-
-            const created = await res.json();
-            setMessage(`Created ${created.displayName} (${created.role}) in ${created.venueId}.`);
-            setEmail("");
-            setPassword("");
-            setDisplayName("");
-        } catch {
-            setError("Could not reach the server.");
-        }
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setMessage("");
+    setError("");
+    const res = await api("/users", {
+      method: "POST",
+      body: JSON.stringify({ displayName, email, password, role }),
+    });
+    if (res.status === 409) {
+      setError("That email is already registered.");
+      return;
     }
+    if (!res.ok) {
+      setError("Could not create the user.");
+      return;
+    }
+    const created = await res.json();
+    setMessage(`Added ${created.displayName} (${created.role}).`);
+    setDisplayName("");
+    setEmail("");
+    setPassword("");
+    onCreated?.();
+  }
 
-    return (
-        <form onSubmit={handleSubmit}>
-            <h2>Add a team member</h2>
-            {error && <p className="error">{error}</p>}
-            {message && <p style={{ color: "#16a34a", fontSize: "0.88rem" }}>{message}</p>}
-
-            <div>
-                <label htmlFor="newName">Name</label>
-                <input id="newName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-            </div>
-
-            <div>
-                <label htmlFor="newEmail">Email</label>
-                <input id="newEmail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-
-            <div>
-                <label htmlFor="newPassword">Temporary password</label>
-                <input id="newPassword" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-            </div>
-
-            <div>
-                <label htmlFor="newRole">Role</label>
-                <select id="newRole" value={role} onChange={(e) => setRole(e.target.value)}>
-                    <option value="GUEST">GUEST</option>
-                    <option value="STAFF">STAFF</option>
-                    <option value="MANAGER">MANAGER</option>
-                </select>
-            </div>
-
-            <button type="submit">Create user</button>
-        </form>
-    );}
+  return (
+    <section className="card">
+      <h2 className="card-title">Add a team member</h2>
+      <form onSubmit={handleSubmit}>
+        {error && <div className="banner banner-error">{error}</div>}
+        {message && <div className="banner banner-success">{message}</div>}
+        <div className="field">
+          <label htmlFor="n-name">Name</label>
+          <input id="n-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+        </div>
+        <div className="field">
+          <label htmlFor="n-email">Email</label>
+          <input id="n-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
+        <div className="field">
+          <label htmlFor="n-pass">Temporary password</label>
+          <input id="n-pass" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        </div>
+        <div className="field">
+          <label htmlFor="n-role">Role</label>
+          <select id="n-role" value={role} onChange={(e) => setRole(e.target.value)}>
+            <option value="GUEST">GUEST</option>
+            <option value="STAFF">STAFF</option>
+            <option value="MANAGER">MANAGER</option>
+          </select>
+        </div>
+        <button className="btn btn-primary btn-block" type="submit">Create user</button>
+      </form>
+    </section>
+  );
+}

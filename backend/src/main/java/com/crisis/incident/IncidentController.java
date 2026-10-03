@@ -41,4 +41,9 @@ public class IncidentController {
                                          @PathVariable String id) {
         return incidentService.getEvents(userId, id);
     }
+
+    @GetMapping("/stats")
+    public IncidentStats stats(@AuthenticationPrincipal String userId) {
+        return incidentService.stats(userId);
+    }
 }
