@@ -1,32 +1,24 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React 19 + TypeScript, built with Vite. See the [main README](../README.md) for running the whole app.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # type-check, then build to dist/
+npm run lint     # oxlint
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+It expects the backend at `http://localhost:8080` (`API_BASE` in `src/api.ts`).
+
+| File | What it does |
+|---|---|
+| `Login.tsx` | sign in |
+| `Board.tsx` | live incident board: STOMP subscription, severity and status filters, status changes, alerts |
+| `ReportIncident.tsx` | report an incident |
+| `IncidentDetail.tsx` | an incident's event history |
+| `Team.tsx`, `AddUser.tsx` | managers add and remove people at their venue |
+| `ChangePassword.tsx` | change your password |
+| `notify.ts` | alert sound and desktop notifications |
+| `ThemeToggle.tsx` | light and dark themes |
+| `api.ts` | API calls with the JWT attached |
